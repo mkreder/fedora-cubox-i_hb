@@ -197,6 +197,7 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_cubox_i_usdhc2_aux &pinctrl_cubox_i_usdhc2>;
 	vmmc-supply = <&reg_3p3v>;
+    no-1-8-v;
 	cd-gpios = <&gpio1 4 0>;
 	status = "okay";
 };
