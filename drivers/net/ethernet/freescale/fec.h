@@ -14,6 +14,7 @@
 /****************************************************************************/
 
 #include <linux/clocksource.h>
+#include <linux/mutex.h>
 #include <linux/net_tstamp.h>
 #include <linux/ptp_clock_kernel.h>
 
@@ -170,6 +171,11 @@ struct bufdesc_ex {
 	unsigned short res0[4];
 };
 
+union bufdesc_u {
+	struct bufdesc bd;
+	struct bufdesc_ex ebd;
+};
+
 /*
  *	The following definitions courtesy of commproc.h, which where
  *	Copyright (c) 1997 Dan Malek (dmalek@jlc.net).
@@ -202,6 +208,7 @@ struct bufdesc_ex {
 #define BD_ENET_RX_OV           ((ushort)0x0002)
 #define BD_ENET_RX_CL           ((ushort)0x0001)
 #define BD_ENET_RX_STATS        ((ushort)0x013f)        /* All status bits */
+#define BD_ENET_RX_ERROR	((ushort)0x003f)
 
 /* Enhanced buffer descriptor control/status used by Ethernet receive */
 #define BD_ENET_RX_VLAN         0x00000004
@@ -224,10 +231,17 @@ struct bufdesc_ex {
 #define BD_ENET_TX_STATS        ((ushort)0x03ff)        /* All status bits */
 
 /*enhanced buffer descriptor control/status used by Ethernet transmit*/
-#define BD_ENET_TX_INT          0x40000000
-#define BD_ENET_TX_TS           0x20000000
-#define BD_ENET_TX_PINS         0x10000000
-#define BD_ENET_TX_IINS         0x08000000
+#define BD_ENET_TX_INT          BIT(30)
+#define BD_ENET_TX_TS           BIT(29)
+#define BD_ENET_TX_PINS         BIT(28)
+#define BD_ENET_TX_IINS         BIT(27)
+#define BD_ENET_TX_TXE		BIT(15)
+#define BD_ENET_TX_UE		BIT(13)
+#define BD_ENET_TX_EE		BIT(12)
+#define BD_ENET_TX_FE		BIT(11)
+#define BD_ENET_TX_LCE		BIT(10)
+#define BD_ENET_TX_OE		BIT(9)
+#define BD_ENET_TX_TSE		BIT(8)
 
 
 /* This device has up to three irqs on some platforms */
@@ -240,27 +254,19 @@ struct bufdesc_ex {
  * the skbuffer directly.
  */
 
-#define FEC_ENET_RX_PAGES	8
+#define FEC_ENET_RX_PAGES	64
 #define FEC_ENET_RX_FRSIZE	2048
 #define FEC_ENET_RX_FRPPG	(PAGE_SIZE / FEC_ENET_RX_FRSIZE)
 #define RX_RING_SIZE		(FEC_ENET_RX_FRPPG * FEC_ENET_RX_PAGES)
 #define FEC_ENET_TX_FRSIZE	2048
 #define FEC_ENET_TX_FRPPG	(PAGE_SIZE / FEC_ENET_TX_FRSIZE)
-#define TX_RING_SIZE		16	/* Must be power of two */
-#define TX_RING_MOD_MASK	15	/*   for this to work */
+#define TX_RING_SIZE		128	/* Must be power of two */
 
 #define BD_ENET_RX_INT          0x00800000
 #define BD_ENET_RX_PTP          ((ushort)0x0400)
 #define BD_ENET_RX_ICE		0x00000020
 #define BD_ENET_RX_PCR		0x00000010
-#define FLAG_RX_CSUM_ENABLED	(BD_ENET_RX_ICE | BD_ENET_RX_PCR)
 #define FLAG_RX_CSUM_ERROR	(BD_ENET_RX_ICE | BD_ENET_RX_PCR)
-
-struct fec_enet_delayed_work {
-	struct delayed_work delay_work;
-	bool timeout;
-	bool trig_tx;
-};
 
 /* The FEC buffer descriptors track the ring buffers.  The rx_bd_base and
  * tx_bd_base always point to the base of the buffer descriptors.  The
@@ -281,27 +287,33 @@ struct fec_enet_private {
 	struct clk *clk_enet_out;
 	struct clk *clk_ptp;
 
+	unsigned char tx_page_map[TX_RING_SIZE];
 	/* The saved address of a sent-in-place packet/buffer, for skfree(). */
 	unsigned char *tx_bounce[TX_RING_SIZE];
 	struct	sk_buff *tx_skbuff[TX_RING_SIZE];
 	struct	sk_buff *rx_skbuff[RX_RING_SIZE];
 
 	/* CPM dual port RAM relative addresses */
-	dma_addr_t	bd_dma;
+	dma_addr_t	rx_bd_dma;
+	dma_addr_t	tx_bd_dma;
 	/* Address of Rx and Tx buffers */
-	struct bufdesc	*rx_bd_base;
-	struct bufdesc	*tx_bd_base;
+	union bufdesc_u	*rx_bd_base;
+	union bufdesc_u	*tx_bd_base;
 	/* The next free ring entry */
-	struct bufdesc	*cur_rx, *cur_tx;
-	/* The ring entries to be free()ed */
-	struct bufdesc	*dirty_tx;
+	unsigned short tx_next;
+	unsigned short tx_dirty;
+	unsigned short tx_min;
+	unsigned short rx_next;
 
 	unsigned short tx_ring_size;
 	unsigned short rx_ring_size;
 
+	unsigned char flags;
+
+	struct mutex mutex;
+
 	struct	platform_device *pdev;
 
-	int	opened;
 	int	dev_id;
 
 	/* Phylib and MDIO interface */
@@ -315,11 +327,12 @@ struct fec_enet_private {
 	int	speed;
 	struct	completion mdio_done;
 	int	irq[FEC_IRQ_NUM];
-	int	bufdesc_ex;
-	int	pause_flag;
+	unsigned short pause_flag;
+	unsigned short pause_mode;
 
 	struct	napi_struct napi;
-	int	csum_flags;
+
+	struct work_struct tx_timeout_work;
 
 	struct ptp_clock *ptp_clock;
 	struct ptp_clock_info ptp_caps;
@@ -333,8 +346,8 @@ struct fec_enet_private {
 	int hwts_rx_en;
 	int hwts_tx_en;
 	struct timer_list time_keep;
-	struct fec_enet_delayed_work delay_work;
 	struct regulator *reg_phy;
+	unsigned long quirks;
 };
 
 void fec_ptp_init(struct platform_device *pdev);
