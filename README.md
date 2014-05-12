@@ -79,16 +79,15 @@ Building your own u-boot
 
 Building your own kernel
 --------------
-You can build using the SRPM available in the binary repo at https://github.com/jmontleon/fedora-20-cubox-i4pro-binary
+You can build using the SRPM:
 
-    git clone https://github.com/jmontleon/fedora-20-cubox-i4pro-binary.git
-    cd fedora-20-cubox-i4pro-binary/rpms
     yum -y install yum-utils rpm-build
+    yumdownloader --source kernel-3.14.0-204.rc4.cubox_i4pro.fc20
     yum-builddep -y kernel-3.14.0-204.rc4.cubox_i4pro.fc20.src.rpm
-    yum -y localinstall kernel-3.14.0-204.rc4.cubox_i4pro.fc20.src.rpm
+    rpm -ivh  kernel-3.14.0-204.rc4.cubox_i4pro.fc20.src.rpm
     rpmbuild -bb ~/rpmbuild/SPECS/kernel.spec
 
-Or you can clone the repo
+Or you can clone the repo:
 
     git clone https://github.com/jmontleon/fedora-20-cubox-i4pro.git
     cd fedora-20-cubox-i4pro
