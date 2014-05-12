@@ -52,8 +52,6 @@ Write everything to the media, and perform some additional setup
     umount /mnt/f20cuboxi4root
     rmdir /mnt/f20cuboxi4root
 
-initial-setup is blocking login via serial so I disabled it in the example above and set the root password to 'fedora'. If you have HDMI and a keyboard attached there is no need to do either of those things if you want to use initial-setup to do so. You can also do something like below to grow the root partition to use the rest of the card before moving it to the Cubox-i, since it also didn't work properly.
-
     fdisk /dev/<location-of-your-fedora-20-arm-media> <<EOF
     d
     3
@@ -66,6 +64,9 @@ initial-setup is blocking login via serial so I disabled it in the example above
     EOF
     e2fsck -f /dev/<location-of-your-fedora-20-arm-media>3
     resize2fs /dev/<location-of-your-fedora-20-arm-media>3
+    # Depending on your card reader the previous two lines may also end up being:
+    # e2fsck -f /dev/<location-of-your-fedora-20-arm-media>p3
+    # resize2fs /dev/<location-of-your-fedora-20-arm-media>p3
 
 Building your own u-boot
 --------------
