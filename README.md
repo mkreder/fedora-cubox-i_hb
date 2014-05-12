@@ -39,6 +39,9 @@ Write everything to the media, and perform some additional setup
     mkdir /mnt/f20cuboxi4root
     mount /dev/<location-of-your-fedora-20-arm-media>3 /mnt/f20cuboxi4root
     mount /dev/<location-of-your-fedora-20-arm-media>1 /mnt/f20cuboxi4root/boot
+    # Depending on your card reader the previous two lines may also end up being:
+    # mount /dev/<location-of-your-fedora-20-arm-media>p3 /mnt/f20cuboxi4root
+    # mount /dev/<location-of-your-fedora-20-arm-media>p1 /mnt/f20cuboxi4root/boot
     rm -f /mnt/f20cuboxi4root/var/lib/rpm/__*
     rm -f /mnt/f20cuboxi4root/boot/boot.*
     unlink /mnt/f20cuboxi4root/etc/systemd/system/multi-user.target.wants/initial-setup-text.service
