@@ -1322,9 +1322,19 @@ static int try_to_unmap_cluster(unsigned long cursor, unsigned int *mapcount,
 		BUG_ON(!page || PageAnon(page));
 
 		if (locked_vma) {
-			mlock_vma_page(page);   /* no-op if already mlocked */
-			if (page == check_page)
+			if (page == check_page) {
+				/* we know we have check_page locked */
+				mlock_vma_page(page);
 				ret = SWAP_MLOCK;
+			} else if (trylock_page(page)) {
+				/*
+				 * If we can lock the page, perform mlock.
+				 * Otherwise leave the page alone, it will be
+				 * eventually encountered again later.
+				 */
+				mlock_vma_page(page);
+				unlock_page(page);
+			}
 			continue;	/* don't unmap */
 		}
 
@@ -1360,8 +1370,9 @@ static int try_to_unmap_cluster(unsigned long cursor, unsigned int *mapcount,
 }
 
 static int try_to_unmap_nonlinear(struct page *page,
-		struct address_space *mapping, struct vm_area_struct *vma)
+		struct address_space *mapping, void *arg)
 {
+	struct vm_area_struct *vma;
 	int ret = SWAP_AGAIN;
 	unsigned long cursor;
 	unsigned long max_nl_cursor = 0;
@@ -1663,7 +1674,7 @@ static int rmap_walk_file(struct page *page, struct rmap_walk_control *rwc)
 	if (list_empty(&mapping->i_mmap_nonlinear))
 		goto done;
 
-	ret = rwc->file_nonlinear(page, mapping, vma);
+	ret = rwc->file_nonlinear(page, mapping, rwc->arg);
 
 done:
 	mutex_unlock(&mapping->i_mmap_mutex);
