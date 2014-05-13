@@ -77,6 +77,8 @@ To get blueooth support set up:
 
 To get mainline kernels on top of stable, enable the mainline repo in /etc/yum.repos.d/cubox-i4pro.repo
 
+I also recommend installing yum-plugin-priorities to ensure you only get kernels from these repos since the generic Fedora kernels will not boot. These repos have a slightly higher priority (98 vs. 99), so packages in them will be used before those from other repos regardless of verion-release-epoch.
+
 Building your own u-boot
 --------------
     git clone https://github.com/rabeeh/u-boot-imx6.git
