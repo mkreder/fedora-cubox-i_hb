@@ -27,7 +27,7 @@ Download Fedora 20 Minimal, the u-boot images, and kernel
     wget http://mirror.nexcess.net/fedora/releases/20/Images/armhfp/Fedora-Minimal-armhfp-20-1-sda.raw.xz
     wget http://people.redhat.com/jmontleo/cubox-i4pro/u-boot-images/SPL
     wget http://people.redhat.com/jmontleo/cubox-i4pro/u-boot-images/u-boot.img
-    wget http://people.redhat.com/jmontleo/cubox-i4pro/rpms/mainline/armhfp/kernel-3.14.0-204.rc4.cubox_i4pro.fc20.armv7hl.rpm 
+    wget http://people.redhat.com/jmontleo/cubox-i4pro/rpms/stable/armhfp/kernel-3.14.4-200.cubox_i4pro.fc20.armv7hl.rpm 
 
 Write everything to the media, and perform some additional setup
 
@@ -45,7 +45,7 @@ Write everything to the media, and perform some additional setup
     rm -f /mnt/f20cuboxi4root/boot/boot.*
     unlink /mnt/f20cuboxi4root/etc/systemd/system/multi-user.target.wants/initial-setup-text.service
     sed -i s@^root:\\*:@root:\\\$6\\\$VpqypThR\\\$QZF3tM8USR6bnIK.CQn3bnj0SU5VeStkKA56ZEtAoPCECe23RqPgWzafuoKGzdWzUz9z8ctjSEhHrVg63wzra0:@g /mnt/f20cuboxi4root/etc/shadow
-    rpm -i --noscripts --ignorearch --root /mnt/f20cuboxi4root ./kernel-3.14.0-204.rc4.cubox_i4pro.fc20.armv7hl.rpm
+    rpm -i --noscripts --ignorearch --root /mnt/f20cuboxi4root ./kernel-3.14.4-200.cubox_i4pro.fc20.armv7hl.rpm
     wget http://people.redhat.com/jmontleo/cubox-i4pro/cubox-i4pro.repo -O /mnt/f20cuboxi4root/etc/yum.repos.d/cubox-i4pro.repo
     umount /mnt/f20cuboxi4root/boot
     umount /mnt/f20cuboxi4root
@@ -69,7 +69,7 @@ Write everything to the media, and perform some additional setup
 
 After reboot USB and other modules probably won't load. The easiest way to fix this is to run:
 
-    yum -y reinstall kernel-3.14.0-204.rc4.cubox_i4pro.fc20
+    yum -y reinstall kernel-3.14.4-200.cubox_i4pro.fc20
     
 To get blueooth support set up:
 
@@ -93,9 +93,9 @@ Building your own kernel
 You can build using the SRPM:
 
     yum -y install yum-utils rpm-build
-    yumdownloader --source kernel-3.14.0-204.rc4.cubox_i4pro.fc20
-    yum-builddep -y kernel-3.14.0-204.rc4.cubox_i4pro.fc20.src.rpm
-    rpm -ivh  kernel-3.14.0-204.rc4.cubox_i4pro.fc20.src.rpm
+    yumdownloader --source kernel-3.14.4-200.cubox_i4pro.fc20
+    yum-builddep -y kernel-3.14.4-200.cubox_i4pro.fc20.src.rpm
+    rpm -ivh  kernel-3.14.4-200.cubox_i4pro.fc20.src.rpm
     rpmbuild -bb ~/rpmbuild/SPECS/kernel.spec
 
 Or you can clone the repo:
