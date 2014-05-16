@@ -46,6 +46,7 @@ Write everything to the media, and perform some additional setup
     unlink /mnt/f20cuboxi4root/etc/systemd/system/multi-user.target.wants/initial-setup-text.service
     sed -i s@^root:\\*:@root:\\\$6\\\$VpqypThR\\\$QZF3tM8USR6bnIK.CQn3bnj0SU5VeStkKA56ZEtAoPCECe23RqPgWzafuoKGzdWzUz9z8ctjSEhHrVg63wzra0:@g /mnt/f20cuboxi4root/etc/shadow
     rpm -i --noscripts --ignorearch --root /mnt/f20cuboxi4root ./kernel-3.14.4-201.cubox_i4pro.fc20.armv7hl.rpm
+    ln -sf uEnv.txt-3.14.4-201.cubox_i4pro.fc20.armv7hl /mnt/f20cuboxi4root/boot/uEnv.txt
     wget http://people.redhat.com/jmontleo/cubox-i4pro/cubox-i4pro.repo -O /mnt/f20cuboxi4root/etc/yum.repos.d/cubox-i4pro.repo
     umount /mnt/f20cuboxi4root/boot
     umount /mnt/f20cuboxi4root
