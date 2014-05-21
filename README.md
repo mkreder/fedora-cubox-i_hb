@@ -80,6 +80,12 @@ To get mainline kernels on top of stable, enable the mainline repo in /etc/yum.r
 
 I also recommend installing yum-plugin-priorities to ensure you only get kernels from these repos since the generic Fedora kernels will not boot. These repos have a slightly higher priority (98 vs. 99), so packages in them will be used before those from other repos regardless of verion-release-epoch.
 
+    yum -y install yum-plugin-priorities
+
+Finally, the wireless driver prints ugly messages to the console every so often. You can suppress all of these except the first set at ~1 second after boot with the following command and a reboot.
+
+    echo "kernel.printk = 1 4 1 7" > /etc/sysctl.d/10-printk.conf
+
 Building your own u-boot
 --------------
     git clone https://github.com/rabeeh/u-boot-imx6.git
