@@ -551,6 +551,12 @@ static int imx_tve_bind(struct device *dev, struct device *master, void *data)
 	tve->dev = dev;
 	spin_lock_init(&tve->lock);
 
+	ddc_node = of_parse_phandle(np, "ddc-i2c-bus", 0);
+	if (ddc_node) {
+		tve->ddc = of_find_i2c_adapter_by_node(ddc_node);
+		of_node_put(ddc_node);
+	}
+
 	tve->mode = of_get_tve_mode(np);
 	if (tve->mode != TVE_MODE_VGA) {
 		dev_err(dev, "only VGA mode supported, currently\n");
