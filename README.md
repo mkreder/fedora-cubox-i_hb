@@ -93,7 +93,7 @@ Write everything to the media, and perform some additional setup
 
 Boot and login (root/fedora)
 
-After reboot USB and other modules probably won't load. The easiest way to fix this is to run:
+After first boot kernel modules probably won't load. The easiest way to fix this is to run:
 
     rpm -ivh --force http://people.redhat.com/jmontleo/cubox-i4pro/rpms/stable/armhfp/kernel-3.14.4-202.cubox_i4pro.fc20.armv7hl.rpm
     
@@ -110,6 +110,10 @@ I also recommend installing yum-plugin-priorities to ensure you only get kernels
 Finally, the wireless driver prints ugly messages to the console every so often. You can suppress all of these except the first set at ~1 second after boot with the following command and a reboot.
 
     echo "kernel.printk = 1 4 1 7" > /etc/sysctl.d/10-printk.conf
+
+Get up to date
+
+    yum -y update
 
 Building your own u-boot
 --------------
