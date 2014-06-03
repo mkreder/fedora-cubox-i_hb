@@ -1,6 +1,5 @@
 Fedora 20 Cubox-i4Pro Kernel
 ==============
-This is a v3.14-rc4 kernel patched with rmk's changes for the Cubox-i. It also includes a .config for Fedora 20 and other minor changes to work on the Cubox-i4Pro
 
 What works
 --------------
@@ -26,10 +25,10 @@ Installing a bootable Fedora 20 image
 Download Fedora 20 Minimal, the u-boot images, and kernel
 
     wget http://mirror.nexcess.net/fedora/releases/20/Images/armhfp/Fedora-Minimal-armhfp-20-1-sda.raw.xz
-    wget https://github.com/jmontleon/fedora-20-cubox-i4pro-binary/blob/master/u-boot/SPL?raw=true -O SPL
-    wget https://github.com/jmontleon/fedora-20-cubox-i4pro-binary/blob/master/u-boot/u-boot.img?raw=true -O u-boot.img
-    wget https://github.com/jmontleon/fedora-20-cubox-i4pro-binary/blob/master/rpms/kernel-3.14.0-204.rc4.cubox_i4pro.fc20.armv7hl.rpm?raw=true -O kernel-3.14.0-204.rc4.cubox_i4pro.fc20.armv7hl.rpm
-    wget https://github.com/jmontleon/fedora-20-cubox-i4pro-binary/blob/master/rpms/cubox-i-brcm4329-bluetooth-1.0-1.fc20.armv7hl.rpm?raw=true
+    wget http://people.redhat.com/jmontleo/cubox-i4pro/u-boot-images/SPL
+    wget http://people.redhat.com/jmontleo/cubox-i4pro/u-boot-images/u-boot.img
+    wget http://people.redhat.com/jmontleo/cubox-i4pro/rpms/stable/armhfp/kernel-3.14.4-202.cubox_i4pro.fc20.armv7hl.rpm 
+
 Write everything to the media, and perform some additional setup
 
     xzcat Fedora-Minimal-armhfp-20-1-sda.raw.xz > /dev/<location-of-your-fedora-20-arm-media>
@@ -39,17 +38,19 @@ Write everything to the media, and perform some additional setup
     mkdir /mnt/f20cuboxi4root
     mount /dev/<location-of-your-fedora-20-arm-media>3 /mnt/f20cuboxi4root
     mount /dev/<location-of-your-fedora-20-arm-media>1 /mnt/f20cuboxi4root/boot
+    # Depending on your card reader the previous two lines may also end up being:
+    # mount /dev/<location-of-your-fedora-20-arm-media>p3 /mnt/f20cuboxi4root
+    # mount /dev/<location-of-your-fedora-20-arm-media>p1 /mnt/f20cuboxi4root/boot
     rm -f /mnt/f20cuboxi4root/var/lib/rpm/__*
     rm -f /mnt/f20cuboxi4root/boot/boot.*
     unlink /mnt/f20cuboxi4root/etc/systemd/system/multi-user.target.wants/initial-setup-text.service
     sed -i s@^root:\\*:@root:\\\$6\\\$VpqypThR\\\$QZF3tM8USR6bnIK.CQn3bnj0SU5VeStkKA56ZEtAoPCECe23RqPgWzafuoKGzdWzUz9z8ctjSEhHrVg63wzra0:@g /mnt/f20cuboxi4root/etc/shadow
-    rpm -i --noscripts --ignorearch --root /mnt/f20cuboxi4root ./kernel-3.14.0-204.rc4.cubox_i4pro.fc20.armv7hl.rpm
-    rpm -i --noscripts --ignorearch --root /mnt/f20cuboxi4root ./cubox-i-brcm4329-bluetooth-1.0-1.fc20.armv7hl.rpm
+    rpm -i --noscripts --ignorearch --root /mnt/f20cuboxi4root ./kernel-3.14.4-202.cubox_i4pro.fc20.armv7hl.rpm
+    ln -sf uEnv.txt-3.14.4-202.cubox_i4pro.fc20.armv7hl /mnt/f20cuboxi4root/boot/uEnv.txt
+    wget http://people.redhat.com/jmontleo/cubox-i4pro/cubox-i4pro.repo -O /mnt/f20cuboxi4root/etc/yum.repos.d/cubox-i4pro.repo
     umount /mnt/f20cuboxi4root/boot
     umount /mnt/f20cuboxi4root
     rmdir /mnt/f20cuboxi4root
-
-initial-setup is blocking login via serial so I disabled it in the example above and set the root password to 'fedora'. If you have HDMI and a keyboard attached there is no need to do either of those things if you want to use initial-setup to do so. You can also do something like below to grow the root partition to use the rest of the card before moving it to the Cubox-i, since it also didn't work properly.
 
     fdisk /dev/<location-of-your-fedora-20-arm-media> <<EOF
     d
@@ -63,6 +64,27 @@ initial-setup is blocking login via serial so I disabled it in the example above
     EOF
     e2fsck -f /dev/<location-of-your-fedora-20-arm-media>3
     resize2fs /dev/<location-of-your-fedora-20-arm-media>3
+    # Depending on your card reader the previous two lines may also end up being:
+    # e2fsck -f /dev/<location-of-your-fedora-20-arm-media>p3
+    # resize2fs /dev/<location-of-your-fedora-20-arm-media>p3
+
+After reboot USB and other modules probably won't load. The easiest way to fix this is to run:
+
+    rpm -ivh --force http://people.redhat.com/jmontleo/cubox-i4pro/rpms/stable/armhfp/kernel-3.14.4-202.cubox_i4pro.fc20.armv7hl.rpm
+    
+To get blueooth support set up:
+
+    yum -y install cubox-i-brcm4329-bluetooth 
+
+To get mainline kernels on top of stable, enable the mainline repo in /etc/yum.repos.d/cubox-i4pro.repo
+
+I also recommend installing yum-plugin-priorities to ensure you only get kernels from these repos since the generic Fedora kernels will not boot. These repos have a slightly higher priority (98 vs. 99), so packages in them will be used before those from other repos regardless of verion-release-epoch.
+
+    yum -y install yum-plugin-priorities
+
+Finally, the wireless driver prints ugly messages to the console every so often. You can suppress all of these except the first set at ~1 second after boot with the following command and a reboot.
+
+    echo "kernel.printk = 1 4 1 7" > /etc/sysctl.d/10-printk.conf
 
 Building your own u-boot
 --------------
@@ -75,16 +97,15 @@ Building your own u-boot
 
 Building your own kernel
 --------------
-You can build using the SRPM available in the binary repo at https://github.com/jmontleon/fedora-20-cubox-i4pro-binary
+You can build using the SRPM:
 
-    git clone https://github.com/jmontleon/fedora-20-cubox-i4pro-binary.git
-    cd fedora-20-cubox-i4pro-binary/rpms
     yum -y install yum-utils rpm-build
-    yum-builddep -y kernel-3.14.0-204.rc4.cubox_i4pro.fc20.src.rpm
-    yum -y localinstall kernel-3.14.0-204.rc4.cubox_i4pro.fc20.src.rpm
+    yumdownloader --source kernel-3.14.4-202.cubox_i4pro.fc20
+    yum-builddep -y kernel-3.14.4-202.cubox_i4pro.fc20.src.rpm
+    rpm -ivh  kernel-3.14.4-202.cubox_i4pro.fc20.src.rpm
     rpmbuild -bb ~/rpmbuild/SPECS/kernel.spec
 
-Or you can clone the repo
+Or you can clone the repo:
 
     git clone https://github.com/jmontleon/fedora-20-cubox-i4pro.git
     cd fedora-20-cubox-i4pro
