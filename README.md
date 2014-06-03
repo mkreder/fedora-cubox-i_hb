@@ -26,7 +26,7 @@ Download the image
 
     wget https://googledrive.com/host/0B0vm64JM4bFZVkFWa0tpdzhHLVk -O Fedora-Minimal-armhfp-cubox-i4pro-20-1-sda.raw.xz
 
-Write the image to you media
+Write the image to your media
 
     xzcat Fedora-Minimal-armhfp-cubox-i4pro-20-1-sda.raw.xz > /dev/<location-of-your-fedora-20-arm-media>
 
