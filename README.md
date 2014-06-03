@@ -30,7 +30,7 @@ Write the image to your media
 
     xzcat Fedora-Minimal-armhfp-cubox-i4pro-20-1-sda.raw.xz > /dev/<location-of-your-fedora-20-arm-media>
 
-Extend the root partition to fill your media if you wish:
+Extend the root partition to fill your media if you wish
 
     fdisk /dev/<location-of-your-fedora-20-arm-media> <<EOF
     d
@@ -90,6 +90,8 @@ Write everything to the media, and perform some additional setup
     EOF
     e2fsck -f /dev/<location-of-your-fedora-20-arm-media>3
     resize2fs /dev/<location-of-your-fedora-20-arm-media>3
+
+Boot and login (root/fedora)
 
 After reboot USB and other modules probably won't load. The easiest way to fix this is to run:
 
