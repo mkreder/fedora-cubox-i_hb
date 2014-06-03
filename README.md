@@ -20,7 +20,36 @@ What does not work
 - UHS for mmc0
 - fbdev is working for X11, but a better driver would improve performance
 
-Installing a bootable Fedora 20 image
+Using a preconfigured image
+--------------
+Download the image
+
+    wget https://googledrive.com/host/0B0vm64JM4bFZVkFWa0tpdzhHLVk -O Fedora-Minimal-armhfp-cubox-i4pro-20-1-sda.raw.xz
+
+Write the image to you media
+
+    xzcat Fedora-Minimal-armhfp-cubox-i4pro-20-1-sda.raw.xz > /dev/<location-of-your-fedora-20-arm-media>
+
+Extend the root partition to fill your media if you wish:
+
+    fdisk /dev/<location-of-your-fedora-20-arm-media> <<EOF
+    d
+    3
+    n
+    p
+
+    1251954
+
+    w
+    EOF
+    e2fsck -f /dev/<location-of-your-fedora-20-arm-media>3
+    resize2fs /dev/<location-of-your-fedora-20-arm-media>3
+
+Boot, login (root/fedora), and get up to date
+
+    yum -y update
+
+Or you may modify the Fedora 20 Minimal image yourself
 --------------
 Download Fedora 20 Minimal, the u-boot images, and kernel
 
@@ -38,9 +67,6 @@ Write everything to the media, and perform some additional setup
     mkdir /mnt/f20cuboxi4root
     mount /dev/<location-of-your-fedora-20-arm-media>3 /mnt/f20cuboxi4root
     mount /dev/<location-of-your-fedora-20-arm-media>1 /mnt/f20cuboxi4root/boot
-    # Depending on your card reader the previous two lines may also end up being:
-    # mount /dev/<location-of-your-fedora-20-arm-media>p3 /mnt/f20cuboxi4root
-    # mount /dev/<location-of-your-fedora-20-arm-media>p1 /mnt/f20cuboxi4root/boot
     rm -f /mnt/f20cuboxi4root/var/lib/rpm/__*
     rm -f /mnt/f20cuboxi4root/boot/boot.*
     unlink /mnt/f20cuboxi4root/etc/systemd/system/multi-user.target.wants/initial-setup-text.service
@@ -64,9 +90,6 @@ Write everything to the media, and perform some additional setup
     EOF
     e2fsck -f /dev/<location-of-your-fedora-20-arm-media>3
     resize2fs /dev/<location-of-your-fedora-20-arm-media>3
-    # Depending on your card reader the previous two lines may also end up being:
-    # e2fsck -f /dev/<location-of-your-fedora-20-arm-media>p3
-    # resize2fs /dev/<location-of-your-fedora-20-arm-media>p3
 
 After reboot USB and other modules probably won't load. The easiest way to fix this is to run:
 
