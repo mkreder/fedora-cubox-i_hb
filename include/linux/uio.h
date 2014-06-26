@@ -16,7 +16,7 @@ struct page;
 
 struct kvec {
 	void *iov_base; /* and that should *never* hold a userland pointer */
-	size_t iov_len;
+	u64 iov_len;
 };
 
 enum {
@@ -27,8 +27,8 @@ enum {
 
 struct iov_iter {
 	int type;
-	size_t iov_offset;
-	size_t count;
+	u64 iov_offset;
+	u64 count;
 	union {
 		const struct iovec *iov;
 		const struct bio_vec *bvec;
@@ -41,12 +41,12 @@ struct iov_iter {
  *
  * NOTE that it is not safe to use this function until all the iovec's
  * segment lengths have been validated.  Because the individual lengths can
- * overflow a size_t when added together.
+ * overflow a u64 when added together.
  */
 static inline size_t iov_length(const struct iovec *iov, unsigned long nr_segs)
 {
 	unsigned long seg;
-	size_t ret = 0;
+	u64 ret = 0;
 
 	for (seg = 0; seg < nr_segs; seg++)
 		ret += iov[seg].iov_len;
@@ -94,7 +94,7 @@ static inline size_t iov_iter_count(struct iov_iter *i)
 	return i->count;
 }
 
-static inline void iov_iter_truncate(struct iov_iter *i, size_t count)
+static inline void iov_iter_truncate(struct iov_iter *i, u64 count)
 {
 	if (i->count > count)
 		i->count = count;
@@ -104,7 +104,7 @@ static inline void iov_iter_truncate(struct iov_iter *i, size_t count)
  * reexpand a previously truncated iterator; count must be no more than how much
  * we had shrunk it.
  */
-static inline void iov_iter_reexpand(struct iov_iter *i, size_t count)
+static inline void iov_iter_reexpand(struct iov_iter *i, u64 count)
 {
 	i->count = count;
 }
