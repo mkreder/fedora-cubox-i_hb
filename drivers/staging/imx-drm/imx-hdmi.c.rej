@@ -1,0 +1,135 @@
+--- drivers/staging/imx-drm/imx-hdmi.c
++++ drivers/staging/imx-drm/imx-hdmi.c
+@@ -115,27 +118,27 @@
+ };
+ 
+ struct imx_hdmi {
+-	struct drm_connector connector;
++	struct drm_ddc_connector *ddc_conn;
+ 	struct drm_encoder encoder;
+ 
++	struct platform_device *audio;
++	struct platform_device *cec;
+ 	enum imx_hdmi_devtype dev_type;
+ 	struct device *dev;
+ 	struct clk *isfr_clk;
+ 	struct clk *iahb_clk;
+ 
+-	enum drm_connector_status connector_status;
+-
+ 	struct hdmi_data_info hdmi_data;
+ 	int vic;
+ 
+ 	u8 edid[HDMI_EDID_LEN];
++	u8 mc_clkdis;
+ 	bool cable_plugin;
+ 
+ 	bool phy_enabled;
+ 	struct drm_display_mode previous_mode;
+ 
+ 	struct regmap *regmap;
+-	struct i2c_adapter *ddc;
+ 	void __iomem *regs;
+ 
+ 	unsigned int sample_rate;
+@@ -1392,41 +1404,16 @@
+ static enum drm_connector_status imx_hdmi_connector_detect(struct drm_connector
+ 							*connector, bool force)
+ {
+-	struct imx_hdmi *hdmi = container_of(connector, struct imx_hdmi,
+-					     connector);
+-	return hdmi->connector_status;
+-}
+-
+-static int imx_hdmi_connector_get_modes(struct drm_connector *connector)
+-{
+-	struct imx_hdmi *hdmi = container_of(connector, struct imx_hdmi,
+-					     connector);
+-	struct edid *edid;
+-	int ret;
+-
+-	if (!hdmi->ddc)
+-		return 0;
+-
+-	edid = drm_get_edid(connector, hdmi->ddc);
+-	if (edid) {
+-		dev_dbg(hdmi->dev, "got edid: width[%d] x height[%d]\n",
+-			edid->width_cm, edid->height_cm);
+-
+-		drm_mode_connector_update_edid_property(connector, edid);
+-		ret = drm_add_edid_modes(connector, edid);
+-		kfree(edid);
+-	} else {
+-		dev_dbg(hdmi->dev, "failed to get edid\n");
+-	}
++	struct imx_hdmi *hdmi = drm_ddc_private(connector);
+ 
+-	return 0;
++	return hdmi_readb(hdmi, HDMI_PHY_STAT0) & HDMI_PHY_HPD ?
++		connector_status_connected : connector_status_disconnected;
+ }
+ 
+ static struct drm_encoder *imx_hdmi_connector_best_encoder(struct drm_connector
+ 							   *connector)
+ {
+-	struct imx_hdmi *hdmi = container_of(connector, struct imx_hdmi,
+-					     connector);
++	struct imx_hdmi *hdmi = drm_ddc_private(connector);
+ 
+ 	return &hdmi->encoder;
+ }
+@@ -1529,7 +1509,6 @@
+ 
+ 			hdmi_modb(hdmi, 0, HDMI_PHY_HPD, HDMI_PHY_POL0);
+ 
+-			hdmi->connector_status = connector_status_connected;
+ 			imx_hdmi_poweron(hdmi);
+ 		} else {
+ 			dev_dbg(hdmi->dev, "EVENT=plugout\n");
+@@ -1537,10 +1516,9 @@
+ 			hdmi_modb(hdmi, HDMI_PHY_HPD, HDMI_PHY_HPD,
+ 				HDMI_PHY_POL0);
+ 
+-			hdmi->connector_status = connector_status_disconnected;
+ 			imx_hdmi_poweroff(hdmi);
+ 		}
+-		drm_helper_hpd_irq_event(hdmi->connector.dev);
++		drm_helper_hpd_irq_event(hdmi->ddc_conn->connector.dev);
+ 	}
+ 
+ 	hdmi_writeb(hdmi, intr_stat, HDMI_IH_PHY_STAT0);
+@@ -1630,27 +1628,22 @@
+ 	if (!hdmi)
+ 		return -ENOMEM;
+ 
++	hdmi->ddc_conn = drm_ddc_connector_create(drm, np, hdmi);
++	if (IS_ERR(hdmi->ddc_conn))
++		return PTR_ERR(hdmi->ddc_conn);
++
++	hdmi->ddc_conn->detect = imx_hdmi_connector_detect;
++
+ 	hdmi->dev = dev;
+-	hdmi->connector_status = connector_status_disconnected;
+ 	hdmi->sample_rate = 48000;
+ 	hdmi->ratio = 100;
++	hdmi->mc_clkdis = 0x7f;
+ 
+ 	if (of_id) {
+ 		const struct platform_device_id *device_id = of_id->data;
+ 		hdmi->dev_type = device_id->driver_data;
+ 	}
+ 
+-	ddc_node = of_parse_phandle(np, "ddc-i2c-bus", 0);
+-	if (ddc_node) {
+-		hdmi->ddc = of_find_i2c_adapter_by_node(ddc_node);
+-		if (!hdmi->ddc)
+-			dev_dbg(hdmi->dev, "failed to read ddc node\n");
+-
+-		of_node_put(ddc_node);
+-	} else {
+-		dev_dbg(hdmi->dev, "no ddc property found\n");
+-	}
+-
+ 	irq = platform_get_irq(pdev, 0);
+ 	if (irq < 0)
+ 		return -EINVAL;
