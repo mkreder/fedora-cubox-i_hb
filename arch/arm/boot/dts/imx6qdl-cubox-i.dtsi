@@ -61,7 +61,7 @@
 
 	sound-spdif {
 		compatible = "fsl,imx-audio-spdif";
-		model = "imx-spdif";
+		model = "Integrated SPDIF";
 		/* IMX6 doesn't implement this yet */
 		spdif-controller = <&spdif>;
 		spdif-out;
@@ -130,16 +130,23 @@
 			fsl,pins = <MX6QDL_PAD_GPIO_17__SPDIF_OUT 0x13091>;
 		};
 
+		pinctrl_cubox_i_usbh1: cubox-i-usbh1 {
+			fsl,pins = <MX6QDL_PAD_GPIO_3__USB_H1_OC 0x1b0b0>;
+		};
+
 		pinctrl_cubox_i_usbh1_vbus: cubox-i-usbh1-vbus {
 			fsl,pins = <MX6QDL_PAD_GPIO_0__GPIO1_IO00 0x4001b0b0>;
 		};
 
-		pinctrl_cubox_i_usbotg_id: cubox-i-usbotg-id {
+		pinctrl_cubox_i_usbotg: cubox-i-usbotg {
 			/*
-			 * The Cubox-i pulls this low, but as it's pointless
+			 * The Cubox-i pulls ID low, but as it's pointless
 			 * leaving it as a pull-up, even if it is just 10uA.
 			 */
-			fsl,pins = <MX6QDL_PAD_GPIO_1__USB_OTG_ID 0x13059>;
+			fsl,pins = <
+				MX6QDL_PAD_GPIO_1__USB_OTG_ID 0x13059
+				MX6QDL_PAD_KEY_COL4__USB_OTG_OC 0x1b0b0
+			>;
 		};
 
 		pinctrl_cubox_i_usbotg_vbus: cubox-i-usbotg-vbus {
@@ -163,6 +170,28 @@
 				MX6QDL_PAD_SD2_DAT3__SD2_DATA3 0x13059
 			>;
 		};
+
+		pinctrl_cubox_i_usdhc2_100mhz: cubox-i-usdhc2-100mhz {
+			fsl,pins = <
+				MX6QDL_PAD_SD2_CMD__SD2_CMD    0x170b9
+				MX6QDL_PAD_SD2_CLK__SD2_CLK    0x100b9
+				MX6QDL_PAD_SD2_DAT0__SD2_DATA0 0x170b9
+				MX6QDL_PAD_SD2_DAT1__SD2_DATA1 0x170b9
+				MX6QDL_PAD_SD2_DAT2__SD2_DATA2 0x170b9
+				MX6QDL_PAD_SD2_DAT3__SD2_DATA3 0x130b9
+			>;
+		};
+
+		pinctrl_cubox_i_usdhc2_200mhz: cubox-i-usdhc2-200mhz {
+			fsl,pins = <
+				MX6QDL_PAD_SD2_CMD__SD2_CMD    0x170f9
+				MX6QDL_PAD_SD2_CLK__SD2_CLK    0x100f9
+				MX6QDL_PAD_SD2_DAT0__SD2_DATA0 0x170f9
+				MX6QDL_PAD_SD2_DAT1__SD2_DATA1 0x170f9
+				MX6QDL_PAD_SD2_DAT2__SD2_DATA2 0x170f9
+				MX6QDL_PAD_SD2_DAT3__SD2_DATA3 0x130f9
+			>;
+		};
 	};
 };
 
@@ -173,20 +202,24 @@
 };
 
 &usbh1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_cubox_i_usbh1>;
 	vbus-supply = <&reg_usbh1_vbus>;
 	status = "okay";
 };
 
 &usbotg {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_cubox_i_usbotg_id>;
+	pinctrl-0 = <&pinctrl_cubox_i_usbotg>;
 	vbus-supply = <&reg_usbotg_vbus>;
 	status = "okay";
 };
 
 &usdhc2 {
-	pinctrl-names = "default";
+	pinctrl-names = "default", "state_100mhz", "state_200mhz";
 	pinctrl-0 = <&pinctrl_cubox_i_usdhc2_aux &pinctrl_cubox_i_usdhc2>;
+	pinctrl-1 = <&pinctrl_cubox_i_usdhc2_aux &pinctrl_cubox_i_usdhc2_100mhz>;
+	pinctrl-2 = <&pinctrl_cubox_i_usdhc2_aux &pinctrl_cubox_i_usdhc2_200mhz>;
 	vmmc-supply = <&reg_3p3v>;
     no-1-8-v;
 	cd-gpios = <&gpio1 4 0>;
