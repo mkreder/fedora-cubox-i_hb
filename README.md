@@ -57,7 +57,7 @@ Download Fedora 20 Minimal, the u-boot images, and kernel
     wget http://mirror.nexcess.net/fedora/releases/20/Images/armhfp/Fedora-Minimal-armhfp-20-1-sda.raw.xz
     wget http://people.redhat.com/jmontleo/cubox-i_hb/u-boot-images/SPL
     wget http://people.redhat.com/jmontleo/cubox-i_hb/u-boot-images/u-boot.img
-    wget http://people.redhat.com/jmontleo/cubox-i_hb/rpms/stable/armhfp/kernel-3.15.5-202.cuboxi_hb.fc20.armv7hl.rpm
+    wget http://people.redhat.com/jmontleo/cubox-i_hb/rpms/stable/armhfp/kernel-3.14.14-202.cuboxi_hb.fc20.armv7hl.rpm
     wget http://people.redhat.com/jmontleo/cubox-i_hb/rpms/stable/armhfp/cubox-i_hb-uenv-1-1.fc20.noarch.rpm
 
 Write everything to the media, and perform some additional setup
@@ -73,12 +73,12 @@ Write everything to the media, and perform some additional setup
     rm -f /mnt/f20cuboxi4root/boot/boot.*
     unlink /mnt/f20cuboxi4root/etc/systemd/system/multi-user.target.wants/initial-setup-text.service
     sed -i s@^root:\\*:@root:\\\$6\\\$VpqypThR\\\$QZF3tM8USR6bnIK.CQn3bnj0SU5VeStkKA56ZEtAoPCECe23RqPgWzafuoKGzdWzUz9z8ctjSEhHrVg63wzra0:@g /mnt/f20cuboxi4root/etc/shadow
-    rpm -i --noscripts --ignorearch --root /mnt/f20cuboxi4root ./kernel-3.15.5-202.cuboxi_hb.fc20.armv7hl.rpm ./cubox-i_hb-uenv-1-1.fc20.noarch.rpm
-    depmod -ab /mnt/f20cuboxi4root/ 3.15.5-202.cuboxi_hb.fc20.armv7hl
-    ln -sf dtb-3.15.5-202.cuboxi_hb.fc20.armv7hl/imx6dl-cubox-i.dtb /mnt/f20cuboxi4root/boot/imx6dl-cubox-i.dtb
-    ln -sf dtb-3.15.5-202.cuboxi_hb.fc20.armv7hl/imx6dl-hummingboard.dtb /mnt/f20cuboxi4root/boot/imx6dl-hummingboard.dtb
-    ln -sf dtb-3.15.5-202.cuboxi_hb.fc20.armv7hl/imx6q-cubox-i.dtb /mnt/f20cuboxi4root/boot/imx6q-cubox-i.dtb
-    ln -sf vmlinuz-3.15.5-202.cuboxi_hb.fc20.armv7hl /mnt/f20cuboxi4root/boot/zImage
+    rpm -i --noscripts --ignorearch --root /mnt/f20cuboxi4root ./kernel-3.14.14-202.cuboxi_hb.fc20.armv7hl.rpm ./cubox-i_hb-uenv-1-1.fc20.noarch.rpm
+    depmod -ab /mnt/f20cuboxi4root/ 3.14.14-202.cuboxi_hb.fc20.armv7hl
+    ln -sf dtb-3.14.14-202.cuboxi_hb.fc20.armv7hl/imx6dl-cubox-i.dtb /mnt/f20cuboxi4root/boot/imx6dl-cubox-i.dtb
+    ln -sf dtb-3.14.14-202.cuboxi_hb.fc20.armv7hl/imx6dl-hummingboard.dtb /mnt/f20cuboxi4root/boot/imx6dl-hummingboard.dtb
+    ln -sf dtb-3.14.14-202.cuboxi_hb.fc20.armv7hl/imx6q-cubox-i.dtb /mnt/f20cuboxi4root/boot/imx6q-cubox-i.dtb
+    ln -sf vmlinuz-3.14.14-202.cuboxi_hb.fc20.armv7hl /mnt/f20cuboxi4root/boot/zImage
     wget http://people.redhat.com/jmontleo/cubox-i_hb/cubox-i_hb.repo -O /mnt/f20cuboxi4root/etc/yum.repos.d/cubox-i_hb.repo
     umount /mnt/f20cuboxi4root/boot
     umount /mnt/f20cuboxi4root
@@ -102,12 +102,12 @@ Boot and login (root/fedora)
 To get blueooth support set up:
 
     yum -y install cubox-i_hb-brcm43xx-bluetooth 
-    systemctl enable brcm43xx
+    systemctl enable brcm43xx.timer
     systemctl start brcm43xx
 
 To get mainline kernels on top of stable, enable the mainline repo in /etc/yum.repos.d/cubox-i_hb.repo
 
-I also recommend installing yum-plugin-priorities to ensure you only get kernels from these repos since the generic Fedora kernels will not boot. These repos have a slightly higher priority (98 vs. 99), so packages in them will be used before those from other repos regardless of verion-release-epoch.
+I also recommend installing yum-plugin-priorities to ensure you only get kernels from these repos since the generic Fedora kernels will possibly not boot and will likely be missing drivers. These repos have a slightly higher priority (98 vs. 99), so packages in them will be used before those from other repos regardless of verion-release-epoch.
 
     yum -y install yum-plugin-priorities
 
@@ -178,15 +178,16 @@ Building your own kernel
 You can build using the SRPM:
 
     yum -y install yum-utils rpm-build
-    yumdownloader --source kernel-3.15.5-202.cuboxi_hb.fc20
-    yum-builddep -y kernel-3.15.5-202.cuboxi_hb.fc20.src.rpm
-    rpm -ivh  kernel-3.15.5-202.cuboxi_hb.fc20.src.rpm
+    yumdownloader --source kernel-3.14.14-202.cuboxi_hb.fc20
+    yum-builddep -y kernel-3.14.14-202.cuboxi_hb.fc20.src.rpm
+    rpm -ivh  kernel-3.14.14-202.cuboxi_hb.fc20.src.rpm
     rpmbuild -bb ~/rpmbuild/SPECS/kernel.spec
 
 Or you can clone the repo:
 
     git clone https://github.com/jmontleon/fedora-20-cubox-i_hb.git
     cd fedora-20-cubox-i_hb
+    git checkout 3.14.14
     make oldconfig #Or make menuconfig if you want to change stuff, and so on.
     make zImage
     make dtbs
@@ -199,5 +200,4 @@ Or you can clone the repo:
 Ensure you have a /boot/uEnv.txt if you haven't already:
 
     bootfile=zImage
-    mmcargs=setenv bootargs root=/dev/mmcblk0p3 rootfstype=ext4 rootwait console=ttymxc0,115200n8 console=tty1 video=mxcfb0:dev=hdmi,1920x1080M@60,if=RGB24,bpp=32
-
+    mmcargs=setenv bootargs root=/dev/mmcblk0p3 rootfstype=ext4 rootwait console=ttymxc0,115200n8 console=tty1 video=1920x1080M@60 rd.dm=0 rd.luks=0 rd.lvm=0 raid=noautodetect zswap.enabled=1 coherent_pool=1M quiet
