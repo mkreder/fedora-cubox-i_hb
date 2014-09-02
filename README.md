@@ -24,7 +24,7 @@ Using a preconfigured image
 --------------
 Download the image
 
-    wget https://googledrive.com/host/0B0vm64JM4bFZRUMzWGNXczFjd28 -O Fedora-Minimal-armhfp-cubox-i_hb-20-1-sda.raw.xz
+    wget https://googledrive.com/host/0B0vm64JM4bFZMjFNTGJBT1ozWjg -O Fedora-Minimal-armhfp-cubox-i_hb-20-1-sda.raw.xz
 
 Write the image to your media
 
