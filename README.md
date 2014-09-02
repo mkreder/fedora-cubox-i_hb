@@ -77,6 +77,7 @@ Write everything to the media, and perform some additional setup
     depmod -ab /mnt/f20cuboxi4root/ 3.14.14-202.cuboxi_hb.fc20.armv7hl
     ln -sf dtb-3.14.14-202.cuboxi_hb.fc20.armv7hl/imx6dl-cubox-i.dtb /mnt/f20cuboxi4root/boot/imx6dl-cubox-i.dtb
     ln -sf dtb-3.14.14-202.cuboxi_hb.fc20.armv7hl/imx6dl-hummingboard.dtb /mnt/f20cuboxi4root/boot/imx6dl-hummingboard.dtb
+    ln -sf dtb-3.14.14-202.cuboxi_hb.fc20.armv7hl/imx6q-hummingboard.dtb /mnt/f20cuboxi4root/boot/imx6q-hummingboard.dtb
     ln -sf dtb-3.14.14-202.cuboxi_hb.fc20.armv7hl/imx6q-cubox-i.dtb /mnt/f20cuboxi4root/boot/imx6q-cubox-i.dtb
     ln -sf vmlinuz-3.14.14-202.cuboxi_hb.fc20.armv7hl /mnt/f20cuboxi4root/boot/zImage
     wget http://people.redhat.com/jmontleo/cubox-i_hb/cubox-i_hb.repo -O /mnt/f20cuboxi4root/etc/yum.repos.d/cubox-i_hb.repo
