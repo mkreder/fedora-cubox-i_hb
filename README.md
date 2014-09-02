@@ -57,8 +57,8 @@ Download Fedora 20 Minimal, the u-boot images, and kernel
     wget http://mirror.nexcess.net/fedora/releases/20/Images/armhfp/Fedora-Minimal-armhfp-20-1-sda.raw.xz
     wget http://people.redhat.com/jmontleo/cubox-i_hb/u-boot-images/SPL
     wget http://people.redhat.com/jmontleo/cubox-i_hb/u-boot-images/u-boot.img
-    wget http://people.redhat.com/jmontleo/cubox-i_hb/rpms/stable/armhfp/kernel-3.14.14-202.cuboxi_hb.fc20.armv7hl.rpm
-    wget http://people.redhat.com/jmontleo/cubox-i_hb/rpms/stable/armhfp/cubox-i_hb-uenv-1-1.fc20.noarch.rpm
+    wget http://people.redhat.com/jmontleo/cubox-i_hb/rpms/test/armhfp/kernel-3.14.14-202.cuboxi_hb.fc20.armv7hl.rpm
+    wget http://people.redhat.com/jmontleo/cubox-i_hb/rpms/common/armhfp/cubox-i_hb-uenv-1-1.fc20.noarch.rpm
 
 Write everything to the media, and perform some additional setup
 
