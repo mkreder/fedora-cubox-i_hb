@@ -15,6 +15,11 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <drm/drmP.h>
+#include <drm/drm_vma_manager.h>
+#include <drm/drm_gem.h>
+#include <linux/shmem_fs.h>
+
 #include "etnaviv_drv.h"
 #include "etnaviv_gpu.h"
 #include "etnaviv_gem.h"

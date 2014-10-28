@@ -1,6 +1,6 @@
 ccflags-y := -Iinclude/drm -Idrivers/staging/vivante
 ifeq (, $(findstring -W,$(EXTRA_CFLAGS)))
-	ccflags-y += -Werror
+
 endif
 
 etnaviv-y := \
