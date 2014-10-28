@@ -18,6 +18,11 @@
 #ifndef __ETNAVIV_GEM_H__
 #define __ETNAVIV_GEM_H__
 
+#include <drm/drmP.h>
+#include <drm/drm_vma_manager.h>
+#include <drm/drm_gem.h>
+#include <linux/shmem_fs.h>
+#include <linux/dma-buf.h>
 #include <linux/reservation.h>
 #include "etnaviv_drv.h"
 

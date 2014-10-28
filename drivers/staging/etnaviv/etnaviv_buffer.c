@@ -14,6 +14,10 @@
  * You should have received a copy of the GNU General Public License along with
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <drm/drmP.h>
+#include <drm/drm_vma_manager.h>
+#include <drm/drm_gem.h>
+#include <linux/shmem_fs.h>
 
 #include "etnaviv_gpu.h"
 #include "etnaviv_gem.h"
@@ -135,8 +139,8 @@ static void etnaviv_buffer_dump(struct etnaviv_gpu *gpu,
 	u32 size = obj->base.size;
 	u32 *ptr = obj->vaddr + off;
 
-	dev_info(gpu->dev, "virt %p phys 0x%08x free 0x%08x\n",
-			ptr, obj->paddr + off, size - len * 4 - off);
+    dev_info(gpu->dev, "virt %p phys 0x%llx free 0x%08x\n",
+    ptr, (u64)obj->paddr + off, size - len * 4 - off);
 
 	print_hex_dump(KERN_INFO, "cmd ", DUMP_PREFIX_OFFSET, 16, 4,
 			ptr, len * 4, 0);
@@ -203,9 +207,9 @@ void etnaviv_buffer_queue(struct etnaviv_gpu *gpu, unsigned int event,
 		cmd->offset = submit->cmd[i].offset + submit->cmd[i].size;
 
 		if (drm_debug & DRM_UT_DRIVER)
-			pr_info("stream link from buffer %u to 0x%08x @ 0x%08x %p\n",
+			pr_info("stream link from buffer %u to 0x%08x @ 0x%llx %p\n",
 				i, link_target,
-				cmd->paddr + cmd->offset * 4,
+				(u64)cmd->paddr + cmd->offset * 4,
 				cmd->vaddr + cmd->offset * 4);
 
 		/* jump back from last cmd to main buffer */
@@ -229,7 +233,7 @@ void etnaviv_buffer_queue(struct etnaviv_gpu *gpu, unsigned int event,
 		pr_info("link op: %p\n", lw);
 		pr_info("link addr: %p\n", lw + 1);
 		pr_info("addr: 0x%08x\n", link_target);
-		pr_info("back: 0x%08x\n", buffer->paddr + (back * 4));
+		pr_info("back: 0x%llx\n", (u64)buffer->paddr + (back * 4));
 		pr_info("event: %d\n", event);
 	}
 
