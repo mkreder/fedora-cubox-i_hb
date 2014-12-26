@@ -88,10 +88,10 @@ You can use the script below:
     rpm -i --noscripts --ignorearch --root ${mediamountpoint} ./kernel-${kernelversion}.fc${fedoraimx6release}.armv7hl.rpm ./cubox-i_hb-uenv-${cuboxihbenvver}.fc${fedoraimx6release}.noarch.rpm
 
     depmod -ab ${mediamountpoint}/ ${kernelversion}.fc${fedoraimx6release}.armv7hl
-    ln -sf dtb-${kernelversion}.fc${fedoraimx6release}.armv7hl/imx6dl-cubox-i.dtb ${mediamountpoint}/boot/imx6dl-cubox-i.dtb
-    ln -sf dtb-${kernelversion}.fc${fedoraimx6release}.armv7hl/imx6dl-hummingboard.dtb ${mediamountpoint}/boot/imx6dl-hummingboard.dtb
-    ln -sf dtb-${kernelversion}.fc${fedoraimx6release}.armv7hl/imx6q-hummingboard.dtb ${mediamountpoint}/boot/imx6q-hummingboard.dtb
-    ln -sf dtb-${kernelversion}.fc${fedoraimx6release}.armv7hl/imx6q-cubox-i.dtb ${mediamountpoint}/boot/imx6q-cubox-i.dtb
+    cp ${mediamountpoint}/boot/dtb-${kernelversion}.fc${fedoraimx6release}.armv7hl/imx6dl-cubox-i.dtb ${mediamountpoint}/boot/imx6dl-cubox-i.dtb
+    cp ${mediamountpoint}/boot/dtb-${kernelversion}.fc${fedoraimx6release}.armv7hl/imx6dl-hummingboard.dtb ${mediamountpoint}/boot/imx6dl-hummingboard.dtb
+    cp ${mediamountpoint}/boot/dtb-${kernelversion}.fc${fedoraimx6release}.armv7hl/imx6q-hummingboard.dtb ${mediamountpoint}/boot/imx6q-hummingboard.dtb
+    cp ${mediamountpoint}/boot/dtb-${kernelversion}.fc${fedoraimx6release}.armv7hl/imx6q-cubox-i.dtb ${mediamountpoint}/boot/imx6q-cubox-i.dtb
     ln -sf vmlinuz-${kernelversion}.fc${fedoraimx6release}.armv7hl ${mediamountpoint}/boot/zImage
     wget http://people.redhat.com/jmontleo/cubox-i_hb/cubox-i_hb.repo -O ${mediamountpoint}/etc/yum.repos.d/cubox-i_hb.repo
 
