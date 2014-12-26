@@ -55,53 +55,65 @@ Boot, login (root/fedora), and get up to date
 
 Or you may modify the Fedora 20 or 21 Minimal image yourself
 --------------
-    Downloadthe u-boot images, Fedora 20 or 21 image, and kernel and uenv packages.
+You can use the script below:
+
+    #Edit lines below
+    export fedoraimx6image=Fedora-Minimal-armhfp-21-5-sda.raw.xz #or Fedora-Minimal-armhfp-20-1-sda.raw.xz
+    export fedoraimx6release=21 #or 20
+    export kernelversion=3.18.1-300.8.1.cuboxi_hb #use ver. at: http://repo.maltegrosse.de/fedora/20/stable/armv7hl/
+    export cuboxihbenvver=1-3.2 #use ver at: http://repo.maltegrosse.de/fedora/20/common/noarch/
+    export locationofyourfedoraarmmedia=sdzzzzzzz #BE CAREFUL. This script will overwrite the location you choose.
+    export mediamountpoint=/mnt/fedoraimx6root
+    #Edit lines above
+
     wget http://people.redhat.com/jmontleo/cubox-i_hb/u-boot-images/SPL
     wget http://people.redhat.com/jmontleo/cubox-i_hb/u-boot-images/u-boot.img
+    wget http://mirror.nexcess.net/fedora/releases/${fedoraimx6release}/Images/armhfp/${fedoraimx6image}
+    wget http://repo.maltegrosse.de/fedora/${fedoraimx6release}/common/noarch/cubox-i_hb-uenv-${cuboxihbenvver}.fc${fedoraimx6release}.noarch.rpm
+    wget http://repo.maltegrosse.de/fedora/${fedoraimx6release}/stable/armv7hl/kernel-${kernelversion}.fc${fedoraimx6release}.armv7hl.rpm
 
-    Get the Fedora 20 or 21 image:
+    xzcat ${fedoraimx6image} > /dev/${locationofyourfedoraarmmedia}
+    dd if=SPL of=/dev/${locationofyourfedoraarmmedia} bs=512 seek=2
+    dd if=u-boot.img of=/dev/${locationofyourfedoraarmmedia} bs=1K seek=42
 
-    wget http://mirror.nexcess.net/fedora/releases/21/Images/armhfp/Fedora-Minimal-armhfp-21-5-sda.raw.xz
-    OR:
-    wget http://mirror.nexcess.net/fedora/releases/20/Images/armhfp/Fedora-Minimal-armhfp-20-1-sda.raw.xz
+    partprobe /dev/${locationofyourfedoraarmmedia}
+    mkdir ${mediamountpoint}
+    mount /dev/${locationofyourfedoraarmmedia}3 ${mediamountpoint}
+    mount /dev/${locationofyourfedoraarmmedia}1 ${mediamountpoint}/boot
 
-    
-    Get the current stable kernel for Fedora 20 or 21:
-    http://repo.maltegrosse.de/fedora/21/stable/armv7hl/
-    OR:
-    http://repo.maltegrosse.de/fedora/20/stable/armv7hl/
+    rm -f ${mediamountpoint}/var/lib/rpm/__*
+    rm -f ${mediamountpoint}/boot/boot.*
+    unlink ${mediamountpoint}/etc/systemd/system/multi-user.target.wants/initial-setup-text.service
+    sed -i s@^root:\\*:@root:\\\$6\\\$VpqypThR\\\$QZF3tM8USR6bnIK.CQn3bnj0SU5VeStkKA56ZEtAoPCECe23RqPgWzafuoKGzdWzUz9z8ctjSEhHrVg63wzra0:@g ${mediamountpoint}/etc/shadow
+    rpm -i --noscripts --ignorearch --root ${mediamountpoint} ./kernel-${kernelversion}.fc${fedoraimx6release}.armv7hl.rpm ./cubox-i_hb-uenv-${cuboxihbenvver}.fc${fedoraimx6release}.noarch.rpm
 
-    Get the current cubox-i_hb-uenv for Fedora 20 or 21:
-    http://repo.maltegrosse.de/fedora/21/common/noarch/
-    OR:
-    http://repo.maltegrosse.de/fedora/20/common/noarch/
+    depmod -ab ${mediamountpoint}/ ${kernelversion}.fc${fedoraimx6release}.armv7hl
+    ln -sf dtb-${kernelversion}.fc${fedoraimx6release}.armv7hl/imx6dl-cubox-i.dtb ${mediamountpoint}/boot/imx6dl-cubox-i.dtb
+    ln -sf dtb-${kernelversion}.fc${fedoraimx6release}.armv7hl/imx6dl-hummingboard.dtb ${mediamountpoint}/boot/imx6dl-hummingboard.dtb
+    ln -sf dtb-${kernelversion}.fc${fedoraimx6release}.armv7hl/imx6q-hummingboard.dtb ${mediamountpoint}/boot/imx6q-hummingboard.dtb
+    ln -sf dtb-${kernelversion}.fc${fedoraimx6release}.armv7hl/imx6q-cubox-i.dtb ${mediamountpoint}/boot/imx6q-cubox-i.dtb
+    ln -sf vmlinuz-${kernelversion}.fc${fedoraimx6release}.armv7hl ${mediamountpoint}/boot/zImage
+    wget http://people.redhat.com/jmontleo/cubox-i_hb/cubox-i_hb.repo -O ${mediamountpoint}/etc/yum.repos.d/cubox-i_hb.repo
 
-Write everything to the media, and perform some additional setup
+    umount ${mediamountpoint}/boot
+    umount ${mediamountpoint}
+    rmdir ${mediamountpoint}
 
-    xzcat Fedora-Minimal-armhfp-20-1-sda.raw.xz > /dev/<location-of-your-fedora-arm-media>
-    dd if=SPL of=/dev/<location-of-your-fedora-arm-media> bs=512 seek=2
-    dd if=u-boot.img of=/dev/<location-of-your-fedora-arm-media> bs=1K seek=42
-    partprobe /dev/<location-of-your-fedora-arm-media>
-    mkdir /mnt/fedoraimx6root
-    mount /dev/<location-of-your-fedora-arm-media>3 /mnt/fedoraimx6root
-    mount /dev/<location-of-your-fedora-arm-media>1 /mnt/fedoraimx6root/boot
-    rm -f /mnt/fedoraimx6root/var/lib/rpm/__*
-    rm -f /mnt/fedoraimx6root/boot/boot.*
-    unlink /mnt/fedoraimx6root/etc/systemd/system/multi-user.target.wants/initial-setup-text.service
-    sed -i s@^root:\\*:@root:\\\$6\\\$VpqypThR\\\$QZF3tM8USR6bnIK.CQn3bnj0SU5VeStkKA56ZEtAoPCECe23RqPgWzafuoKGzdWzUz9z8ctjSEhHrVg63wzra0:@g /mnt/fedoraimx6root/etc/shadow
-    rpm -i --noscripts --ignorearch --root /mnt/fedoraimx6root ./<download-kernel-rpm> ./<downloaded-cubox-i_hb-uenv-rpm>
-    depmod -ab /mnt/fedoraimx6root/ <kernel-ver.rel.dist.arch, i.e 3.14.14-202.cuboxi_hb.fc20.armv7hl>
-    ln -sf dtb-<kernel-ver.rel.dist.arch>/imx6dl-cubox-i.dtb /mnt/f20cuboxi4root/boot/imx6dl-cubox-i.dtb
-    ln -sf dtb-<kernel-ver.rel.dist.arch>/imx6dl-hummingboard.dtb /mnt/f20cuboxi4root/boot/imx6dl-hummingboard.dtb
-    ln -sf dtb-<kernel-ver.rel.dist.arch>/imx6q-hummingboard.dtb /mnt/f20cuboxi4root/boot/imx6q-hummingboard.dtb
-    ln -sf dtb-<kernel-ver.rel.dist.arch>/imx6q-cubox-i.dtb /mnt/fedoraimx6root/boot/imx6q-cubox-i.dtb
-    ln -sf vmlinuz-<kernel-ver.rel.dist.arch> /mnt/f20cuboxi4root/boot/zImage
-    wget http://people.redhat.com/jmontleo/cubox-i_hb/cubox-i_hb.repo -O /mnt/f20cuboxi4root/etc/yum.repos.d/cubox-i_hb.repo
-    umount /mnt/f20cuboxi4root/boot
-    umount /mnt/f20cuboxi4root
-    rmdir /mnt/f20cuboxi4root
+    if [ $fedoraimx6release == 21 ]; then
+    fdisk /dev/${locationofyourfedoraarmmedia} <<EOF
+    d
+    3
+    n
+    p
 
-    fdisk /dev/<location-of-your-fedora-arm-media> <<EOF
+    1251328
+
+    w
+    EOF
+    fi
+
+    if [ $fedoraimx6release == 20 ]; then
+    fdisk /dev/${locationofyourfedoraarmmedia} <<EOF
     d
     3
     n
@@ -111,8 +123,10 @@ Write everything to the media, and perform some additional setup
 
     w
     EOF
-    e2fsck -f /dev/<location-of-your-fedora-arm-media>3
-    resize2fs /dev/<location-of-your-fedora-arm-media>3
+    fi
+
+    e2fsck -f /dev/${locationofyourfedoraarmmedia}3
+    resize2fs /dev/${locationofyourfedoraarmmedia}3
 
 Boot and login (root/fedora)
 
