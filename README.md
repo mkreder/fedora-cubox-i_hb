@@ -158,7 +158,7 @@ Get up to date
 X.org Config
 --------------
 
-To get the fbdev driver working requires some configuration:
+To get the armada driver working requires some configuration:
 
     yum -y install xorg-x11-drv-armada
 
