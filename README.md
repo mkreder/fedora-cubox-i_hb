@@ -17,22 +17,25 @@ What works
 
 What does not work
 --------------
-- UHS for mmc0
-- fbdev is working for X11, but a better driver would improve performance
+- 2D accelertion. 3D acceleration is more or less working.
 
 Using a preconfigured image
 --------------
 Download the image
 
+    Fedora 21:
+    wget https://googledrive.com/host/0B0vm64JM4bFZMjFNTGJBT1ozWjg -O Fedora-Minimal-armhfp-cubox-i_hb-21-5-sda.raw.xz
+
+    Fedora 20:
     wget https://googledrive.com/host/0B0vm64JM4bFZMjFNTGJBT1ozWjg -O Fedora-Minimal-armhfp-cubox-i_hb-20-1-sda.raw.xz
 
 Write the image to your media
 
-    xzcat Fedora-Minimal-armhfp-cubox-i_hb-20-1-sda.raw.xz > /dev/<location-of-your-fedora-20-arm-media>
+    xzcat <fedora-arm-image> > /dev/<location-of-your-fedora-arm-media>
 
 Extend the root partition to fill your media if you wish
 
-    fdisk /dev/<location-of-your-fedora-20-arm-media> <<EOF
+    fdisk /dev/<location-of-your-fedora-arm-media> <<EOF
     d
     3
     n
@@ -42,50 +45,63 @@ Extend the root partition to fill your media if you wish
 
     w
     EOF
-    partprobe /dev/<location-of-your-fedora-20-arm-media>
-    e2fsck -f /dev/<location-of-your-fedora-20-arm-media>3
-    resize2fs /dev/<location-of-your-fedora-20-arm-media>3
+    partprobe /dev/<location-of-your-fedora-arm-media>
+    e2fsck -f /dev/<location-of-your-fedora-arm-media>3
+    resize2fs /dev/<location-of-your-fedora-arm-media>3
 
 Boot, login (root/fedora), and get up to date
 
     yum -y update
 
-Or you may modify the Fedora 20 Minimal image yourself
+Or you may modify the Fedora 20 or 21 Minimal image yourself
 --------------
-Download Fedora 20 Minimal, the u-boot images, and kernel
-
-    wget http://mirror.nexcess.net/fedora/releases/20/Images/armhfp/Fedora-Minimal-armhfp-20-1-sda.raw.xz
+    Downloadthe u-boot images, Fedora 20 or 21 image, and kernel and uenv packages.
     wget http://people.redhat.com/jmontleo/cubox-i_hb/u-boot-images/SPL
     wget http://people.redhat.com/jmontleo/cubox-i_hb/u-boot-images/u-boot.img
-    wget http://people.redhat.com/jmontleo/cubox-i_hb/rpms/test/armhfp/kernel-3.14.14-202.cuboxi_hb.fc20.armv7hl.rpm
-    wget http://people.redhat.com/jmontleo/cubox-i_hb/rpms/common/armhfp/cubox-i_hb-uenv-1-1.fc20.noarch.rpm
+
+    Get the Fedora 20 or 21 image:
+
+    wget http://mirror.nexcess.net/fedora/releases/21/Images/armhfp/Fedora-Minimal-armhfp-21-5-sda.raw.xz
+    OR:
+    wget http://mirror.nexcess.net/fedora/releases/20/Images/armhfp/Fedora-Minimal-armhfp-20-1-sda.raw.xz
+
+    
+    Get the current stable kernel for Fedora 20 or 21:
+    http://repo.maltegrosse.de/fedora/21/stable/armv7hl/
+    OR:
+    http://repo.maltegrosse.de/fedora/20/stable/armv7hl/
+
+    Get the current cubox-i_hb-uenv for Fedora 20 or 21:
+    http://repo.maltegrosse.de/fedora/21/common/noarch/
+    OR:
+    http://repo.maltegrosse.de/fedora/20/common/noarch/
 
 Write everything to the media, and perform some additional setup
 
-    xzcat Fedora-Minimal-armhfp-20-1-sda.raw.xz > /dev/<location-of-your-fedora-20-arm-media>
-    dd if=SPL of=/dev/<location-of-your-fedora-20-arm-media> bs=512 seek=2
-    dd if=u-boot.img of=/dev/<location-of-your-fedora-20-arm-media> bs=1K seek=42
-    partprobe /dev/<location-of-your-fedora-20-arm-media>
-    mkdir /mnt/f20cuboxi4root
-    mount /dev/<location-of-your-fedora-20-arm-media>3 /mnt/f20cuboxi4root
-    mount /dev/<location-of-your-fedora-20-arm-media>1 /mnt/f20cuboxi4root/boot
-    rm -f /mnt/f20cuboxi4root/var/lib/rpm/__*
-    rm -f /mnt/f20cuboxi4root/boot/boot.*
-    unlink /mnt/f20cuboxi4root/etc/systemd/system/multi-user.target.wants/initial-setup-text.service
-    sed -i s@^root:\\*:@root:\\\$6\\\$VpqypThR\\\$QZF3tM8USR6bnIK.CQn3bnj0SU5VeStkKA56ZEtAoPCECe23RqPgWzafuoKGzdWzUz9z8ctjSEhHrVg63wzra0:@g /mnt/f20cuboxi4root/etc/shadow
-    rpm -i --noscripts --ignorearch --root /mnt/f20cuboxi4root ./kernel-3.14.14-202.cuboxi_hb.fc20.armv7hl.rpm ./cubox-i_hb-uenv-1-1.fc20.noarch.rpm
-    depmod -ab /mnt/f20cuboxi4root/ 3.14.14-202.cuboxi_hb.fc20.armv7hl
-    ln -sf dtb-3.14.14-202.cuboxi_hb.fc20.armv7hl/imx6dl-cubox-i.dtb /mnt/f20cuboxi4root/boot/imx6dl-cubox-i.dtb
-    ln -sf dtb-3.14.14-202.cuboxi_hb.fc20.armv7hl/imx6dl-hummingboard.dtb /mnt/f20cuboxi4root/boot/imx6dl-hummingboard.dtb
-    ln -sf dtb-3.14.14-202.cuboxi_hb.fc20.armv7hl/imx6q-hummingboard.dtb /mnt/f20cuboxi4root/boot/imx6q-hummingboard.dtb
-    ln -sf dtb-3.14.14-202.cuboxi_hb.fc20.armv7hl/imx6q-cubox-i.dtb /mnt/f20cuboxi4root/boot/imx6q-cubox-i.dtb
-    ln -sf vmlinuz-3.14.14-202.cuboxi_hb.fc20.armv7hl /mnt/f20cuboxi4root/boot/zImage
+    xzcat Fedora-Minimal-armhfp-20-1-sda.raw.xz > /dev/<location-of-your-fedora-arm-media>
+    dd if=SPL of=/dev/<location-of-your-fedora-arm-media> bs=512 seek=2
+    dd if=u-boot.img of=/dev/<location-of-your-fedora-arm-media> bs=1K seek=42
+    partprobe /dev/<location-of-your-fedora-arm-media>
+    mkdir /mnt/fedoraimx6root
+    mount /dev/<location-of-your-fedora-arm-media>3 /mnt/fedoraimx6root
+    mount /dev/<location-of-your-fedora-arm-media>1 /mnt/fedoraimx6root/boot
+    rm -f /mnt/fedoraimx6root/var/lib/rpm/__*
+    rm -f /mnt/fedoraimx6root/boot/boot.*
+    unlink /mnt/fedoraimx6root/etc/systemd/system/multi-user.target.wants/initial-setup-text.service
+    sed -i s@^root:\\*:@root:\\\$6\\\$VpqypThR\\\$QZF3tM8USR6bnIK.CQn3bnj0SU5VeStkKA56ZEtAoPCECe23RqPgWzafuoKGzdWzUz9z8ctjSEhHrVg63wzra0:@g /mnt/fedoraimx6root/etc/shadow
+    rpm -i --noscripts --ignorearch --root /mnt/fedoraimx6root ./<download-kernel-rpm> ./<downloaded-cubox-i_hb-uenv-rpm>
+    depmod -ab /mnt/fedoraimx6root/ <kernel-ver.rel.dist.arch, i.e 3.14.14-202.cuboxi_hb.fc20.armv7hl>
+    ln -sf dtb-<kernel-ver.rel.dist.arch>/imx6dl-cubox-i.dtb /mnt/f20cuboxi4root/boot/imx6dl-cubox-i.dtb
+    ln -sf dtb-<kernel-ver.rel.dist.arch>/imx6dl-hummingboard.dtb /mnt/f20cuboxi4root/boot/imx6dl-hummingboard.dtb
+    ln -sf dtb-<kernel-ver.rel.dist.arch>/imx6q-hummingboard.dtb /mnt/f20cuboxi4root/boot/imx6q-hummingboard.dtb
+    ln -sf dtb-<kernel-ver.rel.dist.arch>/imx6q-cubox-i.dtb /mnt/fedoraimx6root/boot/imx6q-cubox-i.dtb
+    ln -sf vmlinuz-<kernel-ver.rel.dist.arch> /mnt/f20cuboxi4root/boot/zImage
     wget http://people.redhat.com/jmontleo/cubox-i_hb/cubox-i_hb.repo -O /mnt/f20cuboxi4root/etc/yum.repos.d/cubox-i_hb.repo
     umount /mnt/f20cuboxi4root/boot
     umount /mnt/f20cuboxi4root
     rmdir /mnt/f20cuboxi4root
 
-    fdisk /dev/<location-of-your-fedora-20-arm-media> <<EOF
+    fdisk /dev/<location-of-your-fedora-arm-media> <<EOF
     d
     3
     n
@@ -95,8 +111,8 @@ Write everything to the media, and perform some additional setup
 
     w
     EOF
-    e2fsck -f /dev/<location-of-your-fedora-20-arm-media>3
-    resize2fs /dev/<location-of-your-fedora-20-arm-media>3
+    e2fsck -f /dev/<location-of-your-fedora-arm-media>3
+    resize2fs /dev/<location-of-your-fedora-arm-media>3
 
 Boot and login (root/fedora)
 
@@ -112,9 +128,13 @@ I also recommend installing yum-plugin-priorities to ensure you only get kernels
 
     yum -y install yum-plugin-priorities
 
-Finally, the wireless driver prints ugly messages to the console every so often. You can suppress all of these except the first set at ~1 second after boot with the following command and a reboot.
+The wireless driver prints ugly messages to the console every so often. You can suppress all of these except the first set at ~1 second after boot with the following command and a reboot.
 
     echo "kernel.printk = 1 4 1 7" > /etc/sysctl.d/10-printk.conf
+
+For anyone using an rtl8192cu based wireless card on a Cubox-i or Hummingboard that does not have built in wireless there is a dkms 8192cu package that should improve stability
+    yum -y install 8192cu; reboot
+
 
 Get up to date
 
@@ -126,10 +146,18 @@ X.org Config
 
 To get the fbdev driver working requires some configuration:
 
+    yum -y install xorg-x11-drv-armada
+
     cat >> /etc/X11/xorg.conf.d/10-device.conf << EOF
     Section "Device"
-    Identifier "Builtin Default fbdev Device 0"
-    Driver "fbdev"
+    Identifier      "Videocard0"
+    VendorName      "Freescale"
+    BoardName       "IMX6 SOC"
+    Driver          "armada"
+    Option          "AccelModule"           "etnadrm_gpu"
+    Option          "UseGPU"                "TRUE"
+    Option          "XvAccel"               "TRUE"
+    Option          "XvPreferOverlay"       "FALSE"
     EndSection
     EOF
     cat >> /etc/X11/xorg.conf.d/10-monitor.conf << EOF
@@ -171,24 +199,23 @@ Building your own u-boot
     cd u-boot-imx6
     make mx6_cubox-i_config
     make
-    sudo dd if=SPL of=/dev/<location-of-your-fedora-20-arm-media> bs=512 seek=2
-    sudo dd if=u-boot.img of=/dev/<location-of-your-fedora-20-arm-media> bs=1K seek=42
+    sudo dd if=SPL of=/dev/<location-of-your-fedora-arm-media> bs=512 seek=2
+    sudo dd if=u-boot.img of=/dev/<location-of-your-fedora-arm-media> bs=1K seek=42
 
 Building your own kernel
 --------------
-You can build using the SRPM:
+    You can build using the SRPM from http://repo.maltegrosse.de/fedora/ for the appropriate release mainline or stable repo src directory.
 
     yum -y install yum-utils rpm-build
-    yumdownloader --source kernel-3.14.14-202.cuboxi_hb.fc20
-    yum-builddep -y kernel-3.14.14-202.cuboxi_hb.fc20.src.rpm
-    rpm -ivh  kernel-3.14.14-202.cuboxi_hb.fc20.src.rpm
+    yum-builddep -y ./<download-kernel-src-rpm>
+    rpm -ivh  ./<downloaded-kernel-src-rpm>
     rpmbuild -bb ~/rpmbuild/SPECS/kernel.spec
 
 Or you can clone the repo:
 
-    git clone https://github.com/jmontleon/fedora-20-cubox-i_hb.git
-    cd fedora-20-cubox-i_hb
-    git checkout 3.14.14
+    git clone https://github.com/jmontleon/fedora-cubox-i_hb.git
+    cd fedora-cubox-i_hb
+    git checkout 3.18.1
     make oldconfig #Or make menuconfig if you want to change stuff, and so on.
     make zImage
     make dtbs
