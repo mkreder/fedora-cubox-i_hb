@@ -35,6 +35,25 @@ Write the image to your media
 
 Extend the root partition to fill your media if you wish
 
+Fedora 21:
+
+    fdisk /dev/<location-of-your-fedora-arm-media> <<EOF
+    d
+    3
+    n
+    p
+
+    1251328
+
+    w
+    EOF
+    partprobe /dev/<location-of-your-fedora-arm-media>
+    e2fsck -f /dev/<location-of-your-fedora-arm-media>3
+    resize2fs /dev/<location-of-your-fedora-arm-media>3
+
+
+Fedora 20:
+
     fdisk /dev/<location-of-your-fedora-arm-media> <<EOF
     d
     3
