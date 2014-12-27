@@ -22,9 +22,14 @@ What does not work
 Using a preconfigured image
 --------------
 Download the image
-    Fedora 21: wget https://googledrive.com/host/0B0vm64JM4bFZN3RIOUZoT3Y5RnM -O Fedora-Minimal-armhfp-cubox-i_hb-21-5-sda.raw.xz
+    
+Fedora 21: 
 
-    Fedora 20: wget https://googledrive.com/host/0B0vm64JM4bFZcjNjakNIZG9CMnM -O Fedora-Minimal-armhfp-cubox-i_hb-20-1-sda.raw.xz
+    wget https://googledrive.com/host/0B0vm64JM4bFZN3RIOUZoT3Y5RnM -O Fedora-Minimal-armhfp-cubox-i_hb-21-5-sda.raw.xz
+
+Fedora 20: 
+
+    wget https://googledrive.com/host/0B0vm64JM4bFZcjNjakNIZG9CMnM -O Fedora-Minimal-armhfp-cubox-i_hb-20-1-sda.raw.xz
 
 Write the image to your media
 
