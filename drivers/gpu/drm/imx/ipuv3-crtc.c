@@ -173,8 +173,8 @@ static int ipu_crtc_mode_set(struct drm_crtc *crtc,
 
 	out_pixel_fmt = ipu_crtc->interface_pix_fmt;
 
-	sig_cfg.enable_pol = 1;
-	sig_cfg.clk_pol = 0;
+	sig_cfg.enable_pol = ENABLE_POL_HIGH;
+	sig_cfg.clk_pol = CLK_POL_NEGEDGE;
 	sig_cfg.pixel_fmt = out_pixel_fmt;
 	sig_cfg.v_to_h_sync = 0;
 	sig_cfg.hsync_pin = ipu_crtc->di_hsync_pin;
