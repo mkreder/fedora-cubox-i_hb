@@ -1,4 +1,4 @@
-Fedora 20 Cubox-i and Hummingboard Kernel
+Fedora on Cubox-i and Hummingboard
 ==============
 
 What works
