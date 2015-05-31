@@ -47,7 +47,23 @@ Write the image to your media
 
 Extend the root partition to fill your media if you wish
 
-Fedora 21 or Fedora 22:
+Fedora 22:
+
+    fdisk /dev/<location-of-your-fedora-arm-media> <<EOF
+    d
+    3
+    n
+    p
+
+    1087488
+
+    w
+    EOF
+    partprobe /dev/<location-of-your-fedora-arm-media>
+    e2fsck -f /dev/<location-of-your-fedora-arm-media>3
+    resize2fs /dev/<location-of-your-fedora-arm-media>3
+ 
+Fedora 21:
 
     fdisk /dev/<location-of-your-fedora-arm-media> <<EOF
     d
@@ -130,7 +146,20 @@ You can use the script below:
     umount ${mediamountpoint}
     rmdir ${mediamountpoint}
 
-    if [ $fedoraimx6release == 21 ] || [ $fedoraimx6release == 22 ]; then
+    if [ $fedoraimx6release == 22 ]; then
+    fdisk /dev/${locationofyourfedoraarmmedia} <<EOF
+    d
+    3
+    n
+    p
+
+    1087488
+
+    w
+    EOF
+    fi
+
+    if [ $fedoraimx6release == 21 ]; then
     fdisk /dev/${locationofyourfedoraarmmedia} <<EOF
     d
     3
