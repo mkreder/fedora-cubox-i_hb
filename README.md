@@ -22,14 +22,24 @@ What does not work
 Using a preconfigured image
 --------------
 Download the image
+
+Fedora 22:
+
+    wget https://googledrive.com/host/0B0vm64JM4bFZbVdvMU9tZzQ2cWc -O Fedora-Minimal-armhfp-cubox-i_hb-22-3-sda.raw.xz
     
 Fedora 21: 
 
     wget https://googledrive.com/host/0B0vm64JM4bFZN3RIOUZoT3Y5RnM -O Fedora-Minimal-armhfp-cubox-i_hb-21-5-sda.raw.xz
-
+    
 Fedora 20: 
 
     wget https://googledrive.com/host/0B0vm64JM4bFZcjNjakNIZG9CMnM -O Fedora-Minimal-armhfp-cubox-i_hb-20-1-sda.raw.xz
+
+md5sums:
+
+    696e6534839a37a090e730b87eebbbfd  Fedora-Minimal-armhfp-cubox-i_hb-22-3-sda.raw.xz
+    c41ed4b7aec0c8e7de7999c9244e9098  Fedora-Minimal-armhfp-cubox-i_hb-21-5-sda.raw.xz
+    62a5866aa1d6d72b21901dd7f962f482  Fedora-Minimal-armhfp-cubox-i_hb-20-1-sda.raw.xz
 
 Write the image to your media
 
@@ -37,7 +47,7 @@ Write the image to your media
 
 Extend the root partition to fill your media if you wish
 
-Fedora 21:
+Fedora 21 or Fedora 22:
 
     fdisk /dev/<location-of-your-fedora-arm-media> <<EOF
     d
@@ -79,10 +89,10 @@ Or you may modify the Fedora 20 or 21 Minimal image yourself
 You can use the script below:
 
     #Edit lines below
-    export fedoraimx6image=Fedora-Minimal-armhfp-21-5-sda.raw.xz #or Fedora-Minimal-armhfp-20-1-sda.raw.xz
-    export fedoraimx6release=21 #or 20
-    export kernelversion=3.18.1-300.8.1.cuboxi_hb #use ver. at: http://repo.maltegrosse.de/fedora/20/stable/armv7hl/
-    export cuboxihbenvver=1-3.2 #use ver at: http://repo.maltegrosse.de/fedora/20/common/noarch/
+    export fedoraimx6image=Fedora-Minimal-armhfp-22-3-sda.raw.xz #or Fedora-Minimal-armhfp-21-5-sda.raw.xz or Fedora-Minimal-armhfp-20-1-sda.raw.xz
+    export fedoraimx6release=22 #or 21 or 20
+    export kernelversion=4.0.4-300.14.1.cuboxi_hb #use ver. at: http://repo.maltegrosse.de/fedora/$releasever/stable/armv7hl/
+    export cuboxihbenvver=1-3.1 #use ver at: http://repo.maltegrosse.de/fedora/$releasever/common/noarch/
     export locationofyourfedoraarmmedia=sdzzzzzzz #BE CAREFUL. This script will overwrite the location you choose.
     export mediamountpoint=/mnt/fedoraimx6root
     #Edit lines above
@@ -120,7 +130,7 @@ You can use the script below:
     umount ${mediamountpoint}
     rmdir ${mediamountpoint}
 
-    if [ $fedoraimx6release == 21 ]; then
+    if [ $fedoraimx6release == 21 ] || [ $fedoraimx6release == 22 ]; then
     fdisk /dev/${locationofyourfedoraarmmedia} <<EOF
     d
     3
@@ -159,7 +169,7 @@ To get blueooth support set up:
 
 To get mainline kernels on top of stable, enable the mainline repo in /etc/yum.repos.d/cubox-i_hb.repo
 
-I also recommend installing yum-plugin-priorities to ensure you only get kernels from these repos since the generic Fedora kernels will possibly not boot and will likely be missing drivers. These repos have a slightly higher priority (98 vs. 99), so packages in them will be used before those from other repos regardless of verion-release-epoch.
+I also recommend installing yum-plugin-priorities on Fedora 20 and 21 to ensure you only get kernels from these repos since the generic Fedora kernels will possibly not boot and will likely be missing drivers. These repos have a slightly higher priority (98 vs. 99), so packages in them will be used before those from other repos regardless of verion-release-epoch. dnf recognizes priorities with no additional packages.
 
     yum -y install yum-plugin-priorities
 
