@@ -23,6 +23,10 @@ Using a preconfigured image
 --------------
 Download the image
 
+Fedora 23:
+
+    wget https://googledrive.com/host/0B1Z2aFriRL5PUGpzMHRVbDBNYU0 -O Fedora-Minimal-armhfp-cubox-i_hb-23-10-sda.raw.xz
+
 Fedora 22:
 
     wget https://googledrive.com/host/0B0vm64JM4bFZbVdvMU9tZzQ2cWc -O Fedora-Minimal-armhfp-cubox-i_hb-22-3-sda.raw.xz
@@ -37,6 +41,7 @@ Fedora 20:
 
 md5sums:
 
+    aa854909d5e3c9f76a964635b9c4f790  Fedora-Minimal-armhfp-cubox-i_hb-23-10-sda.raw.xz
     696e6534839a37a090e730b87eebbbfd  Fedora-Minimal-armhfp-cubox-i_hb-22-3-sda.raw.xz
     c41ed4b7aec0c8e7de7999c9244e9098  Fedora-Minimal-armhfp-cubox-i_hb-21-5-sda.raw.xz
     62a5866aa1d6d72b21901dd7f962f482  Fedora-Minimal-armhfp-cubox-i_hb-20-1-sda.raw.xz
@@ -146,7 +151,7 @@ You can use the script below:
     umount ${mediamountpoint}
     rmdir ${mediamountpoint}
 
-    if [ $fedoraimx6release == 22 ]; then
+    if [ $fedoraimx6release == 22 ] || [ $fedoraimx6release == 23 ]; then
     fdisk /dev/${locationofyourfedoraarmmedia} <<EOF
     d
     3
